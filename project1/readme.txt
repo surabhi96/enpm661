@@ -4,7 +4,7 @@ output = 	1 2 3
 		4 5 6 
 		7 8 0
 
-Instructions to run hw1.cpp: (Note: use Ubuntu to run the code for better performance)
+Instructions to run the .cpp file: (Note: use Ubuntu to run the code for better performance)
 1) g++ -std=c++11 hw1.cpp -o hw1
 2) ./hw1
 
