@@ -1,8 +1,8 @@
 This project involves implementing a Brute Force Search (BFS) method to solve the 8-Puzzle problem. 
 The source file in this project will solve a valid input matrix to yield an output matrix as shown below.
 output = 	1 2 3
-			4 5 6 
-			7 8 0
+		4 5 6 
+		7 8 0
 
 Instructions to run hw1.cpp: (Note: use Ubuntu to run the code for better performance)
 1) g++ -std=c++11 hw1.cpp -o hw1
