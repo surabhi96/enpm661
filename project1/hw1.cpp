@@ -11,11 +11,13 @@ using mat = array <array<int, 3>, 3>;
 using arr = array <int, 9>;
 using vec = vector<int>;
 
+// This is a node class 
 class tree
 {
 public:
-	int node_id;
-	mat input_mat;
+	// These are the elements of the node 
+	int node_id; // Uniquely defines a node
+	mat input_mat; // input matrix 
 	tree * parent_node;
 	tree(int node_id, mat input_mat, tree * parent_node)
 	{
@@ -25,6 +27,7 @@ public:
 	}
 };
 
+// Index of where 0 is present in a matrix 
 struct element_ind
 {
 	int i; int j;
@@ -35,8 +38,9 @@ arr take_input()
 	int inp, count = 0;
 	// arr input{2,1,3,5,4,6,7,8,0}; // positive test case
 	// arr input{8,6,7,2,5,4,3,0,1}; // Toughest test case
-	arr input;
-
+	arr input; // Input array 
+	// snippet to take input from user 
+	cout << "Enter input matrix row-wise " << endl;
 	while(count < 9)
 	{
 		cout << "Enter element " << count+1 << " : ";  
@@ -55,6 +59,7 @@ arr take_input()
 	return input;
 }
 
+// Function to check if input matrix entered is valid 
 bool is_valid(arr input_arr)
 {
 	int inversion_cnt = 0;
@@ -68,7 +73,7 @@ bool is_valid(arr input_arr)
 	}
 	return (~inversion_cnt%2);
 }
-
+// find the index position where 0 is located
 element_ind find_index(mat input_mat){
 	for (int i = 0; i < 3; i++){
 		for (int j = 0; j < 3; j++){
@@ -80,7 +85,7 @@ element_ind find_index(mat input_mat){
 		}
 	}	
 }
-
+// Move elements to according to the input move command 
 mat get_config(mat input_mat, string mv)
 {
 	element_ind index = find_index(input_mat);
@@ -110,7 +115,7 @@ mat get_config(mat input_mat, string mv)
 	}
 	else return {};
 }
-
+// check if the current child has already been visited 
 bool is_present(mat child_mat, deque <mat> q)
 { 
 	return (find(q.begin(), q.end(), child_mat) != q.end());
@@ -129,7 +134,7 @@ int main()
 
 		vec goal_vec (goal_mat[0].begin(), goal_mat[2].end());
 		// cout << distance(goal_mat, it) << "vnsonvioWHNB/" << endl;
-
+		// convert vector to matrix
 		mat input_mat {{{input_arr.at(0),input_arr.at(1),input_arr.at(2)},
 						{input_arr.at(3),input_arr.at(4),input_arr.at(5)},
 						{input_arr.at(6),input_arr.at(7),input_arr.at(8)}	}};
@@ -137,10 +142,10 @@ int main()
 		array <string, 4> moves {"up", "down", "left", "right"};
 		int node_id = 0;
 		// Each node of the tree has information about node id, base mat, parent mat
-		tree * root_node = new tree(node_id, input_mat, NULL);
+		tree * root_node = new tree(node_id, input_mat, NULL); // head of the node tree
 		queue <tree*> open;
-		queue <tree*> closed;
-		deque <mat> visited {input_mat};
+		queue <tree*> closed; 
+		deque <mat> visited {input_mat}; // vector to store explored nodes
 		tree * child_node; 
 		open.push(root_node);
 		bool flag = 0; // flag becomes true when the puzzle is solved 
@@ -184,12 +189,14 @@ int main()
 
 					if (!child_mat.empty() && !is_present(child_mat, visited))
 					{
+						// create child mat
 						for (int i = 0; i < 3; i++){
 							for (int j = 0; j < 3; j++){
 								nodes << child_mat[j][i]; nodes << " ";
 							}
 						}
 						nodes << '\n';
+						// make child node
 						child_node = new tree(node_id, child_mat, current_node);
 						open.push(child_node);
 						visited.push_back(child_mat);
@@ -207,7 +214,7 @@ int main()
 		}
 		cout << "Wohoo! Puzzle solved!" << endl;
 		cout << "Do you want to checkout the sequence? (Y/N)" << endl;
-		cout << "Press Y if you want to save the output to the text files!"
+		cout << "Press Y if you want to save the output to the text files!" << endl;
 		char dezire; cin >> dezire;
 
 		if (dezire == 'Y' || dezire == 'y'){
