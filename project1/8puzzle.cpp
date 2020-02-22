@@ -5,6 +5,7 @@
 #include <queue>
 #include <deque>
 #include <vector>
+#include <fstream>
 using namespace std;
 using mat = array <array<int, 3>, 3>;
 using arr = array <int, 9>;
@@ -33,6 +34,7 @@ arr take_input()
 {
 	int inp, count = 0;
 	// arr input{2,1,3,5,4,6,7,8,0}; // positive test case
+	// arr input{8,6,7,2,5,4,3,0,1}; // Toughest test case
 	arr input;
 
 	while(count < 9)
@@ -143,6 +145,21 @@ int main()
 		open.push(root_node);
 		bool flag = 0; // flag becomes true when the puzzle is solved 
 
+		// NodesInfo.txt
+		/*
+		child id = node_id 
+		parent id = current_node->node_id 
+		int cost = 0
+		*/
+		static std::ofstream node_info("NodesInfo.txt");		
+		static std::ofstream node_path("nodePath.txt");
+		static std::ofstream nodes("Nodes.txt");
+		for (int i = 0; i < 3; i++){
+			for (int j = 0; j < 3; j++){
+				nodes << input_mat[j][i]; nodes << " ";
+			}
+		}
+		nodes << '\n';
 		while(!open.empty() && !flag)
 		{
 			tree * current_node = open.front();
@@ -161,10 +178,18 @@ int main()
 				for (auto mv : moves)
 				{
 					mat child_mat = get_config(current_mat, mv); // child mat is the explored mat
+					node_id ++;
+					node_info << node_id; node_info << " "; node_info << current_node->node_id; node_info << " ";
+					node_info << 0 << '\n';
 
 					if (!child_mat.empty() && !is_present(child_mat, visited))
 					{
-						node_id ++;
+						for (int i = 0; i < 3; i++){
+							for (int j = 0; j < 3; j++){
+								nodes << child_mat[j][i]; nodes << " ";
+							}
+						}
+						nodes << '\n';
 						child_node = new tree(node_id, child_mat, current_node);
 						open.push(child_node);
 						visited.push_back(child_mat);
@@ -182,6 +207,7 @@ int main()
 		}
 		cout << "Wohoo! Puzzle solved!" << endl;
 		cout << "Do you want to checkout the sequence? (Y/N)" << endl;
+		cout << "Press Y if you want to save the output to the text files!"
 		char dezire; cin >> dezire;
 
 		if (dezire == 'Y' || dezire == 'y'){
@@ -196,9 +222,11 @@ int main()
 				for (int k = 0; k < 3; k++){
 					for (int p = 0; p < 3; p++){
 						cout << seq[itr][k][p] << " ";
+						node_path << seq[itr][p][k]; node_path << " "; 
 					}
 					cout << endl;
 				}
+				node_path << '\n';
 				cout << endl;
 			}
 		}
