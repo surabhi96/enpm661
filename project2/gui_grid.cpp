@@ -11,32 +11,27 @@ using namespace cv;
 
 void MyLine( Mat img, Point start, Point end )
 {
-  int thickness = 0.2;
+  int thickness = 0.1;
   int lineType = LINE_8;
   line( img,
     start,
     end,
-    Scalar(192,192,192),
+    Scalar( 105,105,105),
     thickness,
     lineType );
 }
 
 int main(void)
 {
-	int width = 900;
-	int height = 600;
+	int width = 1200;
+	int height = 800;
 	Mat frame = cv::Mat(height, width, CV_8UC3, Scalar(255,255,255));
-	int division = 5;
+	int division = 3;
 	for (int i = 1; i < width/division; i++){
 		MyLine(frame, Point(division*i,0), Point(division*i, height));
 	}
 	for (int i = 1; i < height/division; i++){
 		MyLine(frame, Point(0, i*division), Point(width, i*division));
-	}
-	for (int i = 1; i < height/division; i++){
-		for (int j = 1; j < width/division; j++){
-			cvSet(img[0:division*j, 0:division*i], CV_RGB(255,0,0));
-		}
 	}
 	imshow(WINDOW_NAME, frame);
 	waitKey(0);
