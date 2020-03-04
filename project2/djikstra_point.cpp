@@ -4,11 +4,14 @@
 #include <cmath>
 #include <utility>
 #include <queue>
+#include <array>
 #include <unordered_set>
 #include <bits/stdc++.h>
 using id = unsigned int; 
 using weight = double;
 using namespace std;
+// function declaration 
+void print_spath(unordered_map<id, id>&, id);
 
 // encodes child data: child id and associated edge weight 
 // this is used only during initialization / graph formation 
@@ -39,7 +42,7 @@ public:
 	void add_node(id parent_id, id child_id, weight edge_weight);
 	void print();
 	child_list get_child_list(id parent_id);
-	child_data* get_child_data(id parent_id, id child_id);
+	child_data get_child_data(id parent_id, id child_id);
 private: 
 	unordered_map<id, child_list> graph; 
 };
@@ -56,9 +59,7 @@ public:
 
 int main(){
 	Graph graph_; 
-	// graph_.add_node(1,2,1);
-	// graph_.add_node(1,3,1);
-	// graph_.print();
+
 	int height = 2;
 	int width = 20;
 	for (int i = 0; i < height; i++){
@@ -86,50 +87,89 @@ int main(){
 			if (i < height-1 && j < width-1) graph_.add_node(parent_id, child_down+1, sqrt(2));
 		}
 	}
+	// graph_.print();
+
 	// add pixel coordinates of start and goal
 	pair<int, int> start (0,0);
-	pair<int, int> goal (1,8);
+	pair<int, int> goal (1,1);
 	// convert pixel to id encoding 
 	int start_id = width * start.first + start.second + 1;
 	int goal_id = width * goal.first + goal.second + 1;
 	/*This shows that my graph is perfectly formed.
 	try for height = 2 and width = 20*/
-	// for (auto x : graph_.get_child_list(22))
-	// 	cout << x.second.child_id << endl;
+	// for (auto x : graph_.get_child_list(1))
+	// 	cout << x.second.child_id << " " << x.second.edge_weight << endl;
  
  	// I am just going to store nodes(to see if they have been visited)
  	// and their parent id (address)?
- 	unordered_map<id, id*> visited;
- 	visited[start_id] = nullptr;
+ 	unordered_map<id, id> visited;
+ 	visited[start_id] = 0; // parent is id 0; i.e non-existant 
 
  	// Initialize all node distances with INT_MAX (Inf)
  	// Note that your weight is of type double; so static_cast<double>
- 	std::vector<double> distance(height*width, static_cast<double>(INT_MAX));
+ 	// Note the id count is starting from 1; therefore distance[height*width] should be valid
+ 	vector<double> distance(height*width+1, static_cast<double>(INT_MAX));
  	distance[start_id] = 0; // starting node has distance = 0
 
- 	// To store node and its distance 
+ 	// To store nodes and its distance 
  	priority_queue<node_info, vector<node_info>, comparator> pq; 
  	pq.push(node_info(start_id, 0));
 
- 	while (!pq.empty())
+ 	// To keep track of parent id 
+ 	id prev_id = 0; 
+ 	unordered_set<id> is_changed{}; 
+ 	// run until goal id is not present in the visited umap 
+ 	while (visited.find(goal_id) == visited.end())
 	{
-		id current_id = pq.front().first; 
+		// for (auto x : is_changed) cout << "is " << x << " "; cout << endl; 
+		id current_id = pq.top().node_id; 
 		pq.pop();
-		// visited[current_id] = 
+		// only if the distance to the node has been changed, update parent id 
+		// cout << "current and prev " << current_id << " " << prev_id << endl; 
+		// TO FIX : visited getting updated all the time 
+		visited[current_id] = prev_id;
+		
+		// cout << "current and prev " << current_id << " " << prev_id << endl; 
 
-	 	auto current = graph_.get_child_list(current_id); // returns a umap
-	 	for (auto it : current){
-	 		child_data * cd = graph_.get_child_data(current_id, it.first);
-	 		auto c_id = cd->child_id;
-	 		auto parent_weight = distance[start_id];
-	 		if (visited.find(c_id) == visited.end() && distance[c_id] > parent_weight + cd->edge_weight){
-	 			distance[c_id] = parent_weight + cd->edge_weight;
+	 	auto current_list = graph_.get_child_list(current_id); // returns a umap
+
+	 	// push current_id's children in the priority queue if the "if" stmt is true 
+	 	for (auto it : current_list)
+	 	{
+	 		child_data cd = graph_.get_child_data(current_id, it.first);
+	 		id c_id = cd.child_id;
+	 		double parent_weight = distance[current_id];
+	 		
+	 		if (visited.find(c_id) == visited.end() // if this node has not been explored previously 
+	 			&& distance[c_id] > parent_weight + cd.edge_weight) // and its distance is greater than..
+	 		{
+	 			// update distance and push in the priority queue
+	 			distance[c_id] = parent_weight + cd.edge_weight;
+	 			// If c_id is already present in the priority queue with a higher weight of course, 
+	 			// then remove the c_id with a higher distance and push the same c_id with an 
+	 			// updated (smaller) distance
+	 			// Turns out that you don't have to do the above!
+	 			
 	 			pq.push(node_info(c_id, distance[c_id]));
+	 			// cout << "cid " << c_id << " distance " << distance[c_id] << endl ;
 	 		}
 	 	}
 
-	}
+	 	// current id becomes prev id or parent for the next explored node; 
+	 	prev_id = current_id;
+	} 
+	print_spath(visited, goal_id); 
+	cout << goal_id << endl;
+}
 
+// prints the nodes traversed in shortest path 
+// passing by reference avoids the copy of the map which could be heavy work.
+void print_spath(unordered_map<id, id>& visited, id goal){
+	id new_goal = visited.find(goal)->second;
+	if (new_goal == 0) 
+		return; 
+	print_spath(visited, new_goal);
+	cout << new_goal << " ";
 }
 
 void Graph::print(){
@@ -138,8 +178,9 @@ void Graph::print(){
 		// 	cout << "boo" << endl;
 		// 	cout << y.first << endl;
 		// } 
-		cout << x.first << endl;	
+		cout << x.first << " ";	
 	}
+	cout << endl;
 }
 
 void Graph::add_node(id parent_id, id child_id, weight edge_weight){
@@ -161,12 +202,12 @@ Graph::child_list Graph::get_child_list(id parent_id){
 	return graph.at(parent_id);
 }
 
-child_data* Graph::get_child_data(id parent_id, id child_id){
+child_data Graph::get_child_data(id parent_id, id child_id){
 	auto parent_id_ptr = graph.find(parent_id);
 	auto child_id_ptr = parent_id_ptr->second.find(child_id);
 	if (parent_id_ptr == graph.end()) 
-		return nullptr;
+		return child_data();
 	return (child_id_ptr != parent_id_ptr->second.end()) ?
-		&child_id_ptr->second :
-		nullptr;
+		child_id_ptr->second :
+		child_data();
 }
