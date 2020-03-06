@@ -60,8 +60,8 @@ public:
 int main(){
 	Graph graph_; 
 
-	int height = 2;
-	int width = 20;
+	int height = 3;
+	int width = 10;
 	for (int i = 0; i < height; i++){
 		for (int j = 0; j < width; j++){
 			int parent_id = width*i+j+1;
@@ -91,7 +91,7 @@ int main(){
 
 	// add pixel coordinates of start and goal
 	pair<int, int> start (0,0);
-	pair<int, int> goal (1,1);
+	pair<int, int> goal (0,5);
 	// convert pixel to id encoding 
 	int start_id = width * start.first + start.second + 1;
 	int goal_id = width * goal.first + goal.second + 1;
@@ -104,32 +104,53 @@ int main(){
  	// and their parent id (address)?
  	unordered_map<id, id> visited;
  	visited[start_id] = 0; // parent is id 0; i.e non-existant 
+ 	// make a visited structure os parent and child id's and then push back in a set? 
 
  	// Initialize all node distances with INT_MAX (Inf)
  	// Note that your weight is of type double; so static_cast<double>
  	// Note the id count is starting from 1; therefore distance[height*width] should be valid
  	vector<double> distance(height*width+1, static_cast<double>(INT_MAX));
  	distance[start_id] = 0; // starting node has distance = 0
+ 	// distance[0] = 0;
 
  	// To store nodes and its distance 
  	priority_queue<node_info, vector<node_info>, comparator> pq; 
  	pq.push(node_info(start_id, 0));
 
+ 	unordered_set<id> explored;
+
  	// To keep track of parent id 
  	id prev_id = 0; 
- 	unordered_set<id> is_changed{}; 
  	// run until goal id is not present in the visited umap 
- 	while (visited.find(goal_id) == visited.end())
+ 	while (prev_id != goal_id)
 	{
-		// for (auto x : is_changed) cout << "is " << x << " "; cout << endl; 
+		cout << "visited " << endl;
+		for (auto x : visited) 
+			 cout << x.first << " " << x.second << endl;
+
 		id current_id = pq.top().node_id; 
 		pq.pop();
+		// This stores my explored (already visited) nodes!
+		explored.insert(current_id);
+
 		// only if the distance to the node has been changed, update parent id 
 		// cout << "current and prev " << current_id << " " << prev_id << endl; 
 		// TO FIX : visited getting updated all the time 
-		visited[current_id] = prev_id;
-		
-		// cout << "current and prev " << current_id << " " << prev_id << endl; 
+		// why is your visited and 
+		if (current_id != start_id)
+		{
+			child_data child_new = graph_.get_child_data(prev_id, current_id);
+			// change distance not visited !!!!!!!!!!
+			if (distance[current_id] >= distance[prev_id] + child_new.edge_weight){
+				visited[current_id] = prev_id;
+				// cout << "true " << distance[current_id] << " "<<distance[prev_id] << 
+				// " " << child_new.edge_weight<< endl;
+			}
+			// else // default 
+			// 	visited[current_id] = visited[prev_id];
+		}
+		// is_changed.clear();
+		cout << "current and prev " << current_id << " " << prev_id << endl; 
 
 	 	auto current_list = graph_.get_child_list(current_id); // returns a umap
 
@@ -149,15 +170,17 @@ int main(){
 	 			// then remove the c_id with a higher distance and push the same c_id with an 
 	 			// updated (smaller) distance
 	 			// Turns out that you don't have to do the above!
-	 			
+	 			visited[c_id] = current_id;
 	 			pq.push(node_info(c_id, distance[c_id]));
-	 			// cout << "cid " << c_id << " distance " << distance[c_id] << endl ;
+	 			cout << "cid " << c_id << " distance " << distance[c_id] << endl ;
 	 		}
 	 	}
 
 	 	// current id becomes prev id or parent for the next explored node; 
 	 	prev_id = current_id;
 	} 
+	// for (auto x : visited) cout << "visited " << x.first <<" "; cout << endl;
+	cout << "shortest path node list " ;
 	print_spath(visited, goal_id); 
 	cout << goal_id << endl;
 }
