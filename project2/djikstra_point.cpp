@@ -60,7 +60,7 @@ public:
 int main(){
 	Graph graph_; 
 
-	int height = 3;
+	int height = 21;
 	int width = 10;
 	for (int i = 0; i < height; i++){
 		for (int j = 0; j < width; j++){
@@ -91,7 +91,7 @@ int main(){
 
 	// add pixel coordinates of start and goal
 	pair<int, int> start (0,0);
-	pair<int, int> goal (0,5);
+	pair<int, int> goal (4,1);
 	// convert pixel to id encoding 
 	int start_id = width * start.first + start.second + 1;
 	int goal_id = width * goal.first + goal.second + 1;
@@ -101,7 +101,7 @@ int main(){
 	// 	cout << x.second.child_id << " " << x.second.edge_weight << endl;
  
  	// I am just going to store nodes(to see if they have been visited)
- 	// and their parent id (address)?
+ 	// and their parent id (address)
  	unordered_map<id, id> visited;
  	visited[start_id] = 0; // parent is id 0; i.e non-existant 
  	// make a visited structure os parent and child id's and then push back in a set? 
@@ -111,47 +111,28 @@ int main(){
  	// Note the id count is starting from 1; therefore distance[height*width] should be valid
  	vector<double> distance(height*width+1, static_cast<double>(INT_MAX));
  	distance[start_id] = 0; // starting node has distance = 0
- 	// distance[0] = 0;
 
  	// To store nodes and its distance 
  	priority_queue<node_info, vector<node_info>, comparator> pq; 
  	pq.push(node_info(start_id, 0));
 
+ 	// To store explored nodes
  	unordered_set<id> explored;
 
  	// To keep track of parent id 
  	id prev_id = 0; 
- 	// run until goal id is not present in the visited umap 
+ 	// run until the top of pq is not goal id 
  	while (prev_id != goal_id)
 	{
-		cout << "visited " << endl;
-		for (auto x : visited) 
-			 cout << x.first << " " << x.second << endl;
+		// cout << "visited " << endl;
+		// for (auto x : visited) 
+		// 	 cout << x.first << " " << x.second << endl;
 
 		id current_id = pq.top().node_id; 
 		pq.pop();
 		// This stores my explored (already visited) nodes!
 		explored.insert(current_id);
-
-		// only if the distance to the node has been changed, update parent id 
-		// cout << "current and prev " << current_id << " " << prev_id << endl; 
-		// TO FIX : visited getting updated all the time 
-		// why is your visited and 
-		if (current_id != start_id)
-		{
-			child_data child_new = graph_.get_child_data(prev_id, current_id);
-			// change distance not visited !!!!!!!!!!
-			if (distance[current_id] >= distance[prev_id] + child_new.edge_weight){
-				visited[current_id] = prev_id;
-				// cout << "true " << distance[current_id] << " "<<distance[prev_id] << 
-				// " " << child_new.edge_weight<< endl;
-			}
-			// else // default 
-			// 	visited[current_id] = visited[prev_id];
-		}
-		// is_changed.clear();
-		cout << "current and prev " << current_id << " " << prev_id << endl; 
-
+		double parent_weight = distance[current_id];
 	 	auto current_list = graph_.get_child_list(current_id); // returns a umap
 
 	 	// push current_id's children in the priority queue if the "if" stmt is true 
@@ -159,24 +140,18 @@ int main(){
 	 	{
 	 		child_data cd = graph_.get_child_data(current_id, it.first);
 	 		id c_id = cd.child_id;
-	 		double parent_weight = distance[current_id];
 	 		
-	 		if (visited.find(c_id) == visited.end() // if this node has not been explored previously 
+	 		if (explored.find(c_id) == explored.end() // if this node has not been explored previously 
 	 			&& distance[c_id] > parent_weight + cd.edge_weight) // and its distance is greater than..
 	 		{
 	 			// update distance and push in the priority queue
 	 			distance[c_id] = parent_weight + cd.edge_weight;
-	 			// If c_id is already present in the priority queue with a higher weight of course, 
-	 			// then remove the c_id with a higher distance and push the same c_id with an 
-	 			// updated (smaller) distance
-	 			// Turns out that you don't have to do the above!
-	 			visited[c_id] = current_id;
 	 			pq.push(node_info(c_id, distance[c_id]));
-	 			cout << "cid " << c_id << " distance " << distance[c_id] << endl ;
+	 			// update parent of the child
+	 			visited[c_id] = current_id;
 	 		}
 	 	}
 
-	 	// current id becomes prev id or parent for the next explored node; 
 	 	prev_id = current_id;
 	} 
 	// for (auto x : visited) cout << "visited " << x.first <<" "; cout << endl;
