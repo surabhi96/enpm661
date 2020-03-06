@@ -13,23 +13,19 @@ using id = unsigned int;
 using weight = double;
 using namespace std;
 using namespace cv;
-// int width = 4*300;
-// int height = 4*200;
-// int division =10;
 int width = 300;
 int height = 200;
-int division =5;
+int division = 3;
 
 // function declaration 
-
-
 void print_spath(unordered_map<id, id>&, id, Mat);
-Mat color_pixel(Mat image, const string node, int x, int y);
+Mat color_pixel(Mat, const string, int, int);
 void MyLine(Mat, Point, Point);
 Point id2pixel(id);
-bool  PolyObstacle(int x,int y);//x,y wrt to unscaled map
-bool CircleObstacle(int x,int y);
-bool EllipseObstacle(int x,int y)
+bool PolyObstacle(int, int);//x,y wrt to unscaled map
+bool CircleObstacle(int, int);
+bool EllipseObstacle(int, int);
+
 // encodes child data: child id and associated edge weight 
 // this is used only during initialization / graph formation 
 struct child_data{
@@ -118,8 +114,8 @@ int main(){
 
 
 	// graph_.print();
-    circle( frame,Point( 225*division, 50*division),25*division,Scalar( 0, 0, 255 ),FILLED,LINE_8 );
-    ellipse( frame,Point( (width*division)/2, (division* height)/2 ),Size(80*division, 20*division ),0,0,360,Scalar( 0, 0, 255 ),FILLED,LINE_8);
+    circle( frame,Point( 225*division, 50*division),25*division,Scalar(200,200,200),FILLED,LINE_8 );
+    ellipse( frame,Point( (width*division)/2, (division* height)/2 ),Size(80*division, 20*division ),0,0,360,Scalar(200,200,200),FILLED,LINE_8);
     // rectangle(frame,Point( 35*division, 141*division ),Point( 95*division, (170*division)),Scalar( 0, 0, 255 ),FILLED,LINE_8 );
     Point compol[1][6];
     compol[0][0]  = Point(25*division,15*division);
@@ -130,7 +126,7 @@ int main(){
     compol[0][5]  = Point(75*division,15*division);
     const Point* ppt[1] = { compol[0] };
     int npt[] = { 6 };
-    fillPoly( frame,ppt,npt,1,Scalar( 0, 0, 255 ),LINE_8 );
+    fillPoly( frame,ppt,npt,1,Scalar(200,200,200),LINE_8 );
     Point re[1][4];
     re[0][0]  = Point(95*division,170*division);
     re[0][1]  = Point(100*division,161*division);
@@ -138,7 +134,7 @@ int main(){
     re[0][3]  = Point(30*division,132.5*division);
     const Point* pt[1] = { re[0] };
     int nptt[] = { 4 };
-    fillPoly( frame,pt,nptt,1,Scalar( 0, 0, 255 ),LINE_8 );
+    fillPoly( frame,pt,nptt,1,Scalar(200,200,200),LINE_8 );
     Point ro[1][4];
     ro[0][0]  = Point(225*division,190*division);
     ro[0][1]  = Point(250*division,175*division);
@@ -146,7 +142,7 @@ int main(){
     ro[0][3]  = Point(200*division,175*division);
     const Point* ptr[1] = { ro[0] };
     int nptr[] = { 4 };
-    fillPoly( frame,ptr,nptr,1,Scalar( 0, 0, 255 ),LINE_8 );
+    fillPoly( frame,ptr,nptr,1,Scalar(200,200,200),LINE_8 );
 
 	// add pixel coordinates of start and goal
 	pair<int, int> start (0,0);
@@ -338,41 +334,40 @@ bool  PolyObstacle(int x,int y)
 {
     // Rhombus
     if ((x*(-3/5)+y-55<0) && (x*(3/5)+y-325<0) && (x*(-3/5)+y-25>0) && (x*(3/5)+y-295 > 0))
-        return true
+        return true;
 
     // polygon - rhombus
     else if (x*(7/5)+y-120 > 0 && x*(-6/5)+y+10 < 0 && x*(6/5)+y-170<0 && x*(-7/5)+y+90>0)
-        return true
+        return true;
 
     //polygon - triangle1
     else if (y-15 > 0 && x*(7/5)+y-120 < 0 && x*(-7/5)+y+20 < 0)
-        return true
+        return true;
    
     // polygon - triangle2
     else if (y+(13*x)-340 > 0 && x+y-100 < 0 && x*(-7/5)+y+20 > 0)
-        return true
+        return true;
 
     // rectangle -angled
     else if ((200-y) - (1.73)*x + 135 > 0 && (200-y) + (0.58)*x - 96.35  <= 0 && (200-y) - (1.73)*x - 15.54 <= 0 && (200-y) + (0.58)*x - 84.81 >= 0)
-        return true
+        return true;
 
-    else:
-        return false
+    else
+        return false;
  }
 bool CircleObstacle(int x,int y)
 {
-    if (((x-225)^2) + ((y-50)^2) < (25^2)):
-        return True
-    else:
-        return False
-
- }
+    if (((x-225)^2) + ((y-50)^2) < (25^2))
+        return true;
+    else
+        return false;
+}
    
 bool EllipseObstacle(int x,int y)
 {
-    if ((((x-150)^2/(40^2) + ((y-100)^2)/(20^2) <= 1)
-        return True
-    else:
-        return False
+    if ((((x-150)^2/(40^2)) + ((y-100)^2)/(20^2)) <= 1)
+        return true;
+    else
+        return false;
 
 }
