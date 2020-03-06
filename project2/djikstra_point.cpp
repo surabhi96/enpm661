@@ -7,11 +7,21 @@
 #include <array>
 #include <unordered_set>
 #include <bits/stdc++.h>
+#include <opencv2/opencv.hpp>
+#include <string>
 using id = unsigned int; 
 using weight = double;
 using namespace std;
+using namespace cv;
+int width = 300;
+int height = 200;
+int division = 3;
+
 // function declaration 
-void print_spath(unordered_map<id, id>&, id);
+void print_spath(unordered_map<id, id>&, id, Mat);
+Mat color_pixel(Mat image, const string node, int x, int y);
+void MyLine(Mat, Point, Point);
+Point id2pixel(id);
 
 // encodes child data: child id and associated edge weight 
 // this is used only during initialization / graph formation 
@@ -58,10 +68,19 @@ public:
 };
 
 int main(){
+	// Input image
+	Mat frame = cv::Mat(height*division, width*division
+		, CV_8UC3, Scalar(255,255,255));
+	
+	for (int i = 1; i < width; i++){
+		MyLine(frame, Point(division*i,0), Point(division*i, division*height));
+	}
+	for (int i = 1; i < height; i++){
+		MyLine(frame, Point(0, i*division), Point(division*width, i*division));
+	}
+
 	Graph graph_; 
 
-	int height = 21;
-	int width = 10;
 	for (int i = 0; i < height; i++){
 		for (int j = 0; j < width; j++){
 			int parent_id = width*i+j+1;
@@ -91,7 +110,11 @@ int main(){
 
 	// add pixel coordinates of start and goal
 	pair<int, int> start (0,0);
-	pair<int, int> goal (4,1);
+	pair<int, int> goal (3,10);
+	frame = color_pixel(frame, "start", start.first, start.second);
+	frame = color_pixel(frame, "goal", goal.first, goal.second);
+	// imshow("Dijkstra's path planning algorithm", frame);
+	// 		waitKey(0);
 	// convert pixel to id encoding 
 	int start_id = width * start.first + start.second + 1;
 	int goal_id = width * goal.first + goal.second + 1;
@@ -104,7 +127,6 @@ int main(){
  	// and their parent id (address)
  	unordered_map<id, id> visited;
  	visited[start_id] = 0; // parent is id 0; i.e non-existant 
- 	// make a visited structure os parent and child id's and then push back in a set? 
 
  	// Initialize all node distances with INT_MAX (Inf)
  	// Note that your weight is of type double; so static_cast<double>
@@ -140,7 +162,10 @@ int main(){
 	 	{
 	 		child_data cd = graph_.get_child_data(current_id, it.first);
 	 		id c_id = cd.child_id;
-	 		
+	 		Point child_pix = id2pixel(c_id);
+	 		frame = color_pixel(frame, "visited", child_pix.x, child_pix.y);
+	 		imshow("Dijkstra's path planning algorithm", frame);
+			waitKey(1);
 	 		if (explored.find(c_id) == explored.end() // if this node has not been explored previously 
 	 			&& distance[c_id] > parent_weight + cd.edge_weight) // and its distance is greater than..
 	 		{
@@ -156,18 +181,25 @@ int main(){
 	} 
 	// for (auto x : visited) cout << "visited " << x.first <<" "; cout << endl;
 	cout << "shortest path node list " ;
-	print_spath(visited, goal_id); 
-	cout << goal_id << endl;
+	print_spath(visited, goal_id, frame); 
+	// cout << goal_id << endl;
+	// imshow("Dijkstra's path planning algorithm", frame);
+	waitKey(0);
 }
 
 // prints the nodes traversed in shortest path 
 // passing by reference avoids the copy of the map which could be heavy work.
-void print_spath(unordered_map<id, id>& visited, id goal){
+void print_spath(unordered_map<id, id>& visited, id goal, Mat frame){
 	id new_goal = visited.find(goal)->second;
+	
 	if (new_goal == 0) 
 		return; 
-	print_spath(visited, new_goal);
+	print_spath(visited, new_goal, frame);
 	cout << new_goal << " ";
+	Point child_pix = id2pixel(new_goal);
+	frame = color_pixel(frame, "path", child_pix.x, child_pix.y);
+	imshow("Dijkstra's path planning algorithm", frame);
+	waitKey(1);
 }
 
 void Graph::print(){
@@ -208,4 +240,54 @@ child_data Graph::get_child_data(id parent_id, id child_id){
 	return (child_id_ptr != parent_id_ptr->second.end()) ?
 		child_id_ptr->second :
 		child_data();
+}
+
+void MyLine(Mat img, Point start, Point end)
+{
+  int thickness = 0.1;
+  int lineType = LINE_8;
+  line( img,
+    start,
+    end,
+    Scalar(200,200,200),
+    thickness,
+    lineType );
+}
+
+Mat color_pixel(Mat image, const string node, int x, int y){
+	Vec3b color;
+	int split;
+	// cout << node << endl;
+	if(node == "start") {
+		split = 6;
+		color = Vec3b(0,0,255);
+	}
+	if(node == "goal") {
+		split = 6; 
+		color = Vec3b(0,255,0);
+	}
+	if(node == "visited") {
+		split = 3;
+		color = Vec3b(222, 232, 8);
+	}
+	if(node == "path") {
+		split = 3;
+		color = Vec3b(0,0,0);
+	}
+	for (int i = 0; i < split; i++){
+		for (int j = 0; j < split; j++){
+			// cout << "i " << division*x+i << "j " << division*y+j << endl;
+			image.at<Vec3b>(division*x+i, division*y+j) = color;
+		}
+	}
+	return image; 
+}
+
+Point id2pixel(id id_){
+	id_ = id_ - 1;
+	Point p;
+	p.x = floor(id_/width);
+	p.y = id_ - width*p.x;
+	// cout << "xy " << p.x << " " << p.y << " " << endl;
+	return p; 
 }
