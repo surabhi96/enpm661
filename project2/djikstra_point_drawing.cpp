@@ -9,6 +9,7 @@
 #include <bits/stdc++.h>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include<cmath>
 using id = unsigned int; 
 using weight = double;
 using namespace std;
@@ -378,40 +379,94 @@ bool is_valid(Point in){
 	return true; 
 }
 
+// bool is_obstacle(int x, int y) 
+// {
+// 	// Rhombus
+// 	if ((x*(-3/5)+y-55 < 0) && (x*(3/5)+y-325 < 0) && 
+// 		(x*(-3/5)+y-25 > 0) && (x*(3/5)+y-295 > 0))
+// 		return true;
+
+// 	// polygon - rhombus
+// 	else if (x*(7/5)+y-120 > 0 && x*(-6/5)+y+10 < 0 && 
+// 		x*(6/5)+y-170 < 0 && x*(-7/5)+y+90 > 0)
+// 		return true;
+
+// 	// polygon - triangle1
+// 	else if (y-15 > 0 && x*(7/5)+y-120 < 0 && x*(-7/5)+y+20 < 0)
+// 		return true;
+ 
+// 	// polygon - triangle2
+// 	else if (y+(13*x)-340 > 0 && x+y-100 < 0 && x*(-7/5)+y+20 > 0)
+// 		return true;
+
+// 	// rectangle -angled
+// 	else if ((200-y) - (1.73)*x + 135 > 0 && (200-y) + (0.58)*x - 96.35  <= 0 && 
+// 		(200-y) - (1.73)*x - 15.54 <= 0 && (200-y) + (0.58)*x - 84.81 >= 0)
+// 		return true;
+
+// 	// circle 
+// 	else if (((x-225)^2) + ((y-50)^2) < (25^2))
+// 		return true;
+
+// 	// ellipse
+// 	else if (((((x-150)^2)/(40^2)) + ((y-100)^2)/(20^2)) <= 1)
+// 		return true;
+	
+// 	return false;
+// }
 bool is_obstacle(int x, int y) 
 {
-	// Rhombus
-	if ((x*(-3/5)+y-55 < 0) && (x*(3/5)+y-325 < 0) && 
-		(x*(-3/5)+y-25 > 0) && (x*(3/5)+y-295 > 0))
-		return true;
+  // Rhombus
+  if ((x*(-3/5)+y-55 < 0) && (x*(3/5)+y-325 < 0) && 
+    (x*(-3/5)+y-25 > 0) && (x*(3/5)+y-295 > 0))
+  {
+    // cout<<"rhom"<<endl;
+    return true;}
 
-	// polygon - rhombus
-	else if (x*(7/5)+y-120 > 0 && x*(-6/5)+y+10 < 0 && 
-		x*(6/5)+y-170 < 0 && x*(-7/5)+y+90 > 0)
-		return true;
+  // polygon - rhombus
+  else if (x*(7/5)+y-120 > 0 && x*(-6/5)+y+10 < 0 && 
+    x*(6/5)+y-170 < 0 && x*(-7/5)+y+90 > 0)
+  {
+  // cout<<"rhom poly"<<endl;
+    return true;}
 
-	// polygon - triangle1
-	else if (y-15 > 0 && x*(7/5)+y-120 < 0 && x*(-7/5)+y+20 < 0)
-		return true;
+  // polygon - triangle1
+  else if (y-15 > 0 && x*(7/5)+y-120 < 0 && x*(-7/5)+y+20 < 0)
+  {
+    // cout<<"poly t1"<<endl;
+    return true;
+  }
  
-	// polygon - triangle2
-	else if (y+(13*x)-340 > 0 && x+y-100 < 0 && x*(-7/5)+y+20 > 0)
-		return true;
+  // polygon - triangle2
+  else if (y+(13*x)-340 > 0 && x+y-100 < 0 && x*(-7/5)+y+20 > 0)
+  {
+    // cout<<"poly t2"<<endl;
+    return true;
+  }
 
-	// rectangle -angled
-	else if ((200-y) - (1.73)*x + 135 > 0 && (200-y) + (0.58)*x - 96.35  <= 0 && 
-		(200-y) - (1.73)*x - 15.54 <= 0 && (200-y) + (0.58)*x - 84.81 >= 0)
-		return true;
+  // rectangle -angled
+  else if ((200-y) - (1.73)*x + 135 > 0 && (200-y) + (0.58)*x - 96.35  <= 0 && 
+    (200-y) - (1.73)*x - 15.54 <= 0 && (200-y) + (0.58)*x - 84.81 >= 0)
+  {
+  // cout<<"rectangle"<<endl;
+    return true;
+}
+  // circle 
+  else if ((pow((x-225),2) + pow((y-50),2) < (25^2)))
 
-	// circle 
-	else if (((x-225)^2) + ((y-50)^2) < (25^2))
-		return true;
+    {
+      // cout<<"circle"<<endl;
+    return true;
+  }
 
-	// ellipse
-	else if ((((x-150)^2/(40^2)) + ((y-100)^2)/(20^2)) <= 1)
-		return true;
-	
-	return false;
+  // ellipse
+  else if    ((((pow((x-150),2)/(40^2)) + ( pow((y-100),2)/(20^2)))) <= 1)
+  {
+    // cout<<"ellipse"<<endl;
+    return true;
+  }
+  
+  return false;
 }
 
 // bool CircleObstacle(int x,int y)
