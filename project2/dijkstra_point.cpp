@@ -9,6 +9,8 @@
 #include <bits/stdc++.h>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <chrono>
+#include <vector>
 using id = unsigned int; 
 using weight = double;
 using namespace std;
@@ -18,7 +20,7 @@ int height = 200;
 int division = 3;
 
 // function declaration 
-void print_spath(unordered_map<id, id>&, id, Mat);
+void print_spath(unordered_map<id, id>&, id);
 Mat color_pixel(Mat, const string, int, int);
 void MyLine(Mat, Point, Point);
 Point id2pixel(id);
@@ -27,7 +29,7 @@ bool is_obstacle(int, int);
 bool is_valid(Point);
 // bool CircleObstacle(int, int);
 // bool EllipseObstacle(int, int);
-
+vector<pair<int, int>> my_path;
 // encodes child data: child id and associated edge weight 
 // this is used only during initialization / graph formation 
 struct child_data{
@@ -73,25 +75,20 @@ public:
 };
 
 int main(){
+	std::chrono::high_resolution_clock::time_point s, e;
 	// Input image
-	Mat frame = cv::Mat(height*division, width*division, CV_8UC3, Scalar(255,255,255));
 	
-	for (int i = 0; i < height; i++){
-		for (int j = 0; j < width; j++){
-			if (is_obstacle(j, i))
-				frame = color_pixel(frame, "obstacle", j, i);
-		}
-	}
+	// add pixel coordinates of start(0, 0) and goal (3,10)
+	// Point start_w (190, 199);
+	// Point goal_w (198, 199);
+	Point start_w (5,5);
+	Point goal_w (295, 195);
+	// cout << "Enter x coordinate of start point in range 0 to 300 "; cin >> start_w.x;
+	// cout << "Enter y coordinate of start point in range 0 to 200 "; cin >> start_w.y;
+	// cout << "Enter x coordinate of goal point in range 0 to 300 "; cin >> goal_w.x;
+	// cout << "Enter y coordinate of goal point in range 0 to 200 "; cin >> goal_w.y;
 
-	// imshow("Dijkstra's path planning algorithm", frame);
-	// waitKey(0);
-
-	for (int i = 1; i < width; i++){
-		MyLine(frame, Point(division*i,0), Point(division*i, division*height));
-	}
-	for (int i = 1; i < height; i++){
-		MyLine(frame, Point(0, i*division), Point(division*width, i*division));
-	}
+	s = std::chrono::high_resolution_clock::now();  
 
 	Graph graph_; 
 
@@ -144,16 +141,6 @@ int main(){
 
 	// imshow("Dijkstra's path planning algorithm", frame);
 	// waitKey(0);
-
-	// add pixel coordinates of start(0, 0) and goal (3,10)
-	// Point start_w (190, 199);
-	// Point goal_w (198, 199);
-	Point start_w (200, 200);
-	Point goal_w (198, 200);
-	cout << "Enter x coordinate of start point in range 0 to 300 "; cin >> start_w.x;
-	cout << "Enter y coordinate of start point in range 0 to 200 "; cin >> start_w.y;
-	cout << "Enter x coordinate of goal point in range 0 to 300 "; cin >> goal_w.x;
-	cout << "Enter y coordinate of goal point in range 0 to 200 "; cin >> goal_w.y;
 	Point start = in_img_frame(start_w);
 	Point goal = in_img_frame(goal_w);
 	cout << "start " << start.x << " " << start.y << endl;
@@ -172,8 +159,6 @@ int main(){
 		exit(0);
 	}
 
-	frame = color_pixel(frame, "start", start.x, start.y);
-	frame = color_pixel(frame, "goal", goal.x, goal.y);
 	// imshow("Dijkstra's path planning algorithm", frame);
 	// 		waitKey(0);
 	// convert pixel to id encoding 
@@ -188,6 +173,7 @@ int main(){
 	// I am just going to store nodes(to see if they have been visited)
 	// and their parent id (address)
 	unordered_map<id, id> visited;
+	vector<pair<int, int>> exp;
 	visited[start_id] = 0; // parent is id 0; i.e non-existant 
 
 	// Initialize all node distances with INT_MAX (Inf)
@@ -227,12 +213,14 @@ int main(){
 			id c_id = cd.child_id;
 			Point child_pix = id2pixel(c_id);
 			
-			frame = color_pixel(frame, "visited", child_pix.x, child_pix.y);
-			frame = color_pixel(frame, "goal", goal.x, goal.y);
-			frame = color_pixel(frame, "start", start.x, start.y);
+			exp.push_back(make_pair(child_pix.x, child_pix.y)); 
+			// frame = color_pixel(frame, "visited", child_pix.x, child_pix.y);
+			// frame = color_pixel(frame, "goal", goal.x, goal.y);
+			// frame = color_pixel(frame, "start", start.x, start.y);
 
-			imshow("Dijkstra's path planning algorithm", frame);
-			waitKey(1);
+			// imshow("Dijkstra's path planning algorithm", frame);
+			// waitKey(1);
+
 			if (explored.find(c_id) == explored.end() // if this node has not been explored previously 
 				&& distance[c_id] > parent_weight + cd.edge_weight) // and its distance is greater than..
 			{
@@ -248,25 +236,67 @@ int main(){
 	} 
 	// for (auto x : visited) cout << "visited " << x.first <<" "; cout << endl;
 	cout << "shortest path node list " ;
-	print_spath(visited, goal_id, frame); 
-	// cout << goal_id << endl;
+	print_spath(visited, goal_id); 
+	cout << goal_id << endl;
 	// imshow("Dijkstra's path planning algorithm", frame);
+	// waitKey(0);
+	e = std::chrono::high_resolution_clock::now();
+	double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(e - s).count();
+    std::cout << "Code took " << time_elapsed << " miliseconds to execute\n";
+
+    Mat frame = cv::Mat(height*division, width*division, CV_8UC3, Scalar(255,255,255));
+	
+	for (int i = 0; i < height; i++){
+		for (int j = 0; j < width; j++){
+			if (is_obstacle(j, i))
+				frame = color_pixel(frame, "obstacle", j, i);
+		}
+	}
+
+	// imshow("Dijkstra's path planning algorithm", frame);
+	// waitKey(0);
+
+	for (int i = 1; i < width; i++){
+		MyLine(frame, Point(division*i,0), Point(division*i, division*height));
+	}
+	for (int i = 1; i < height; i++){
+		MyLine(frame, Point(0, i*division), Point(division*width, i*division));
+	}
+
+	frame = color_pixel(frame, "start", start.x, start.y);
+	frame = color_pixel(frame, "goal", goal.x, goal.y);
+	// imshow("Dijkstra's path planning algorithm", frame);
+	// 	waitKey(0);
+
+    for (auto it = exp.begin(); it != exp.end(); it++){
+    	frame = color_pixel(frame, "visited", it->first, it->second);
+    	frame = color_pixel(frame, "start", start.x, start.y);
+		frame = color_pixel(frame, "goal", goal.x, goal.y);
+		imshow("Dijkstra's path planning algorithm", frame);
+		waitKey(1);
+    }
+    for (auto it = my_path.begin(); it != my_path.end(); it++){
+    	frame = color_pixel(frame, "visited", it->first, it->second);
+    	imshow("Dijkstra's path planning algorithm", frame);
+		waitKey(1);
+    }
 	waitKey(0);
 }
 
 // prints the nodes traversed in shortest path 
 // passing by reference avoids the copy of the map which could be heavy work.
-void print_spath(unordered_map<id, id>& visited, id goal, Mat frame){
+void print_spath(unordered_map<id, id>& visited, id goal){
 	id new_goal = visited.find(goal)->second;
 	
 	if (new_goal == 0) 
 		return; 
-	print_spath(visited, new_goal, frame);
+	print_spath(visited, new_goal);
 	cout << new_goal << " ";
 	Point child_pix = id2pixel(new_goal);
-	frame = color_pixel(frame, "path", child_pix.x, child_pix.y);
-	imshow("Dijkstra's path planning algorithm", frame);
-	waitKey(1);
+	my_path.push_back(make_pair(child_pix.x, child_pix.y));
+	// frame = color_pixel(frame, "path", child_pix.x, child_pix.y);
+	// imshow("Dijkstra's path planning algorithm", frame);
+	// waitKey(1);
 }
 
 void Graph::print(){
