@@ -71,7 +71,7 @@ public:
 		return n1.distance > n2.distance; 
 	}
 };
-Mat frame = cv::Mat(height*division, width*division, CV_8UC3, Scalar(255,255,255));
+
 int main(){
 	// Input image
 	Mat frame = cv::Mat(height*division, width*division, CV_8UC3, Scalar(255,255,255));
@@ -102,10 +102,26 @@ int main(){
 			int child_up = width*(i-1)+j+1;
 			int child_down = width*(i+1)+j+1;
 
-			// cout << "parent_id " << parent_id <<  endl;
-			// cout << "child_up " << child_up << endl;  
+			Point p1 = id2pixel(parent_id);
+			Point p2 = id2pixel(parent_id+1);
+			Point p3 = id2pixel(parent_id-1);
+			Point p4 = id2pixel(child_up);
+			Point p5 = id2pixel(child_up-1);
+			Point p6 = id2pixel(child_up+1);
+			Point p7 = id2pixel(child_down-1);
+			Point p8 = id2pixel(child_down+1);
+			Point p9 = id2pixel(child_down);
+
 			// left child allowed with edge weight = 1
-			if (!is_obstacle(j,i)){
+			if (!is_obstacle(p1.x,p1.y) &&
+				!is_obstacle(p2.x,p2.y) &&
+				!is_obstacle(p3.x,p3.y) &&
+				!is_obstacle(p4.x,p4.y) &&
+				!is_obstacle(p5.x,p5.y) &&
+				!is_obstacle(p6.x,p6.y) &&
+				!is_obstacle(p7.x,p7.y) &&
+				!is_obstacle(p8.x,p8.y) &&
+				!is_obstacle(p8.x,p9.y)){
 				// left child allowed with edge weight = 1
 				if (j > 0) graph_.add_node(parent_id, parent_id-1, 1);
 				// top child allowed with edge weight = 1
@@ -143,8 +159,12 @@ int main(){
 	cout << "start " << start.x << " " << start.y << endl;
 	cout << "goal " << goal.x << " " << goal.y << endl;
 
-	if (is_obstacle(start.x, start.y) || is_obstacle(goal.x, goal.y)){
-		cerr << "One or more of your chosen points lie in the obstacle" << endl;
+	if (is_obstacle(start.x, start.y)){
+		cerr << "Starting point lies in the obstacle" << endl;
+		exit(0);
+	}
+	if (is_obstacle(goal.x, goal.y)){
+		cerr << "Ending point lies in the obstacle" << endl;
 		exit(0);
 	}
 	if (!is_valid(start) || !is_valid(goal)){
@@ -208,6 +228,8 @@ int main(){
 			Point child_pix = id2pixel(c_id);
 			
 			frame = color_pixel(frame, "visited", child_pix.x, child_pix.y);
+			frame = color_pixel(frame, "goal", goal.x, goal.y);
+			frame = color_pixel(frame, "start", start.x, start.y);
 
 			imshow("Dijkstra's path planning algorithm", frame);
 			waitKey(1);
@@ -315,7 +337,7 @@ Mat color_pixel(Mat image, const string node, int x, int y){
 	}
 	if(node == "goal") {
 		split = division*1; 
-		color = Vec3b(0,255,0);
+		color = Vec3b(34,139,34);
 	}
 	if(node == "visited") {
 		split = division;
@@ -370,6 +392,7 @@ bool is_valid(Point in){
 	return true; 
 }
 
+// obstacle c-space
 bool is_obstacle(int x, int y) 
 {
 	// Rhombus
