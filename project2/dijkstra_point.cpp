@@ -132,12 +132,12 @@ int main(){
 	// add pixel coordinates of start(0, 0) and goal (3,10)
 	// Point start_w (190, 199);
 	// Point goal_w (198, 199);
-	Point start_w (150, 130);
-	Point goal_w (150, 70);
-	// cout << "Enter x coordinate of start point in range 0 to 300 "; cin >> start_w.x;
-	// cout << "Enter y coordinate of start point in range 0 to 200 "; cin >> start_w.y;
-	// cout << "Enter x coordinate of goal point in range 0 to 300 "; cin >> goal_w.x;
-	// cout << "Enter y coordinate of goal point in range 0 to 200 "; cin >> goal_w.y;
+	Point start_w (200, 200);
+	Point goal_w (198, 200);
+	cout << "Enter x coordinate of start point in range 0 to 300 "; cin >> start_w.x;
+	cout << "Enter y coordinate of start point in range 0 to 200 "; cin >> start_w.y;
+	cout << "Enter x coordinate of goal point in range 0 to 300 "; cin >> goal_w.x;
+	cout << "Enter y coordinate of goal point in range 0 to 200 "; cin >> goal_w.y;
 	Point start = in_img_frame(start_w);
 	Point goal = in_img_frame(goal_w);
 	cout << "start " << start.x << " " << start.y << endl;
@@ -159,7 +159,7 @@ int main(){
 	// convert pixel to id encoding 
 	int start_id = width * start.y + start.x + 1;
 	int goal_id = width * goal.y + goal.x + 1;
-	cout << "start " << start_id << "end " << goal_id << endl;
+	// cout << "start " << start_id << "end " << goal_id << endl;
 	/*This shows that my graph is perfectly formed.
 	try for height = 2 and width = 20*/
 	// for (auto x : graph_.get_child_list(1))
@@ -206,15 +206,9 @@ int main(){
 			child_data cd = graph_.get_child_data(current_id, it.first);
 			id c_id = cd.child_id;
 			Point child_pix = id2pixel(c_id);
-			int flag = 1; 
-			if (flag){
-				
-				cout << c_id << " " << child_pix.x << " " << child_pix.y << endl;
-			}
 			
 			frame = color_pixel(frame, "visited", child_pix.x, child_pix.y);
 
-			
 			imshow("Dijkstra's path planning algorithm", frame);
 			waitKey(1);
 			if (explored.find(c_id) == explored.end() // if this node has not been explored previously 
@@ -363,6 +357,8 @@ Point in_img_frame(Point in){
 	Point out; 
 	out.x = in.x-1;
 	out.y = height-in.y-1;
+	if (out.x<0) out.x=0; 
+	if (out.y<0) out.y=0;
 	return out;
 }
 
