@@ -24,8 +24,9 @@ void MyLine(Mat, Point, Point);
 Point id2pixel(id);
 Point in_img_frame(Point);
 bool is_obstacle(int, int);
-bool is_obstacle_there(int, int,int,int);
 bool is_valid(Point);
+bool is_obstacle_there(int, int,int,int);
+
 // bool CircleObstacle(int, int);
 // bool EllipseObstacle(int, int);
 
@@ -74,14 +75,14 @@ public:
 };
 Mat frame = cv::Mat(height*division, width*division, CV_8UC3, Scalar(255,255,255));
 int main(){
-		// add pixel coordinates of start(0, 0) and goal (3,10)
+			// add pixel coordinates of start(0, 0) and goal (3,10)
 	// Point start_w (190, 199);
 	// Point goal_w (198, 199);
 	Point start_w (150, 130);
 	Point goal_w (150, 70);
 	int r; //radius
 	int c;//clearence
-	cout << "En;ter x coordinate of start point in range 0 to 300 "; cin >> start_w.x;
+	cout << "Enter x coordinate of start point in range 0 to 300 "; cin >> start_w.x;
 	cout << "Enter y coordinate of start point in range 0 to 200 "; cin >> start_w.y;
 	cout << "Enter x coordinate of goal point in range 0 to 300 "; cin >> goal_w.x;
 	cout << "Enter y coordinate of goal point in range 0 to 200 "; cin >> goal_w.y;
@@ -90,23 +91,30 @@ int main(){
 
 	// Input image
 	Mat frame = cv::Mat(height*division, width*division, CV_8UC3, Scalar(255,255,255));
-	
+
 	for (int i = 0; i < height; i++){
 		for (int j = 0; j < width; j++){
 			if (is_obstacle_there(j, i,r,c))
+				frame = color_pixel(frame, "clearence", j, i);
+		}
+	}
+	
+	for (int i = 0; i < height; i++){
+		for (int j = 0; j < width; j++){
+			if (is_obstacle(j, i))
 				frame = color_pixel(frame, "obstacle", j, i);
 		}
 	}
 
 	// imshow("Dijkstra's path planning algorithm", frame);
 	// waitKey(0);
-if(division!=1){
+
 	for (int i = 1; i < width; i++){
 		MyLine(frame, Point(division*i,0), Point(division*i, division*height));
 	}
 	for (int i = 1; i < height; i++){
 		MyLine(frame, Point(0, i*division), Point(division*width, i*division));
-	}}
+	}
 
 	Graph graph_; 
 
@@ -117,10 +125,32 @@ if(division!=1){
 			int child_up = width*(i-1)+j+1;
 			int child_down = width*(i+1)+j+1;
 
+			Point p1 = id2pixel(parent_id);
+			Point p2 = id2pixel(child_up);
+			Point p3 = id2pixel(child_down);
+			Point p4 = id2pixel(parent_id+1);
+			Point p5 = id2pixel(parent_id-1);
+			Point p6 = id2pixel(child_up-1);
+			Point p7 = id2pixel(child_down-1);
+			Point p8 = id2pixel(child_up+1);
+			Point p9 = id2pixel(child_down+1);
+
+
+
 			// cout << "parent_id " << parent_id <<  endl;
 			// cout << "child_up " << child_up << endl;  
 			// left child allowed with edge weight = 1
-			if (!is_obstacle_there(j,i,r,c)){
+			if (parent_id)
+			if (!is_obstacle_there(p1.x,p1.y,r,c) &&
+				!is_obstacle_there(p2.x,p2.y,r,c) &&
+				!is_obstacle_there(p3.x,p3.y,r,c) &&
+				!is_obstacle_there(p4.x,p4.y,r,c) &&
+				!is_obstacle_there(p5.x,p5.y,r,c) &&
+				!is_obstacle_there(p6.x,p6.y,r,c) &&
+				!is_obstacle_there(p7.x,p7.y,r,c) &&
+				!is_obstacle_there(p8.x,p8.y,r,c) &&
+				!is_obstacle_there(p9.x,p9.y,r,c) 
+				){
 				// left child allowed with edge weight = 1
 				if (j > 0) graph_.add_node(parent_id, parent_id-1, 1);
 				// top child allowed with edge weight = 1
@@ -141,18 +171,13 @@ if(division!=1){
 		}
 	}
 
-	// imshow("Dijkstra's path planning algorithm", frame);
-	// waitKey(0);
-
-
-	
 
 	Point start = in_img_frame(start_w);
 	Point goal = in_img_frame(goal_w);
 	cout << "start " << start.x << " " << start.y << endl;
 	cout << "goal " << goal.x << " " << goal.y << endl;
 
-	if (is_obstacle_there(start.x, start.y,r,c) || is_obstacle_there(goal.x, goal.y,r,r)){
+	if (is_obstacle_there(start.x, start.y,r,c) || is_obstacle_there(goal.x, goal.y,r,c)){
 		cerr << "One or more of your chosen points lie in the obstacle" << endl;
 		exit(0);
 	}
@@ -168,7 +193,7 @@ if(division!=1){
 	// convert pixel to id encoding 
 	int start_id = width * start.y + start.x + 1;
 	int goal_id = width * goal.y + goal.x + 1;
-	cout << "start " << start_id << "end " << goal_id << endl;
+	// cout << "start " << start_id << "end " << goal_id << endl;
 	/*This shows that my graph is perfectly formed.
 	try for height = 2 and width = 20*/
 	// for (auto x : graph_.get_child_list(1))
@@ -215,15 +240,11 @@ if(division!=1){
 			child_data cd = graph_.get_child_data(current_id, it.first);
 			id c_id = cd.child_id;
 			Point child_pix = id2pixel(c_id);
-			int flag = 1; 
-			if (flag){
-				
-				cout << c_id << " " << child_pix.x << " " << child_pix.y << endl;
-			}
 			
 			frame = color_pixel(frame, "visited", child_pix.x, child_pix.y);
+            frame = color_pixel(frame, "goal", goal.x, goal.y);
+            frame = color_pixel(frame, "start", start.x, start.y);
 
-			
 			imshow("Dijkstra's path planning algorithm", frame);
 			waitKey(1);
 			if (explored.find(c_id) == explored.end() // if this node has not been explored previously 
@@ -330,7 +351,7 @@ Mat color_pixel(Mat image, const string node, int x, int y){
 	}
 	if(node == "goal") {
 		split = division*1; 
-		color = Vec3b(0,255,0);
+		color = Vec3b(34,139,34);
 	}
 	if(node == "visited") {
 		split = division;
@@ -343,6 +364,10 @@ Mat color_pixel(Mat image, const string node, int x, int y){
 	if(node == "obstacle") {
 		split = division;
 		color = Vec3b(200,200,200);
+	}
+	if(node == "clearence") {
+		split = division;
+		color = Vec3b(150,150,150);
 	}
 	for (int i = 0; i < split; i++){
 		for (int j = 0; j < split; j++){
@@ -372,6 +397,8 @@ Point in_img_frame(Point in){
 	Point out; 
 	out.x = in.x-1;
 	out.y = height-in.y-1;
+	if (out.x<0) out.x=0; 
+	if (out.y<0) out.y=0;
 	return out;
 }
 
@@ -431,16 +458,16 @@ bool is_obstacle(int x, int y)
 bool is_obstacle_there(int x, int y,int r,int c) 
 {
   // Rhombus
-  if ((x*(-3/5.0)+y-55-r-c < 0) && (x*(3/5.0)+y-325 -r-c< 0) && 
-    (x*(-3/5.0)+y-25+r+c > 0) && (x*(3/5.0)+y-295 +r+c> 0))
+  if ((x*(-3/5.0)+y-55+((-r-c)/sin(1.57-atan(-3/5.0))) < 0) && (x*(3/5.0)+y-325 +((-r-c)/sin(1.57-atan(3/5.0)))< 0) && 
+    (x*(-3/5.0)+y-25+((r+c)/sin(1.57-atan(-3/5.0))) > 0) && (x*(3/5.0)+y-295 +((r+c)/sin(1.57-atan(3/5.0))))> 0)
   {
     // cout<<"rhom"<<endl;
     return true;}
 
 
   // rectangle -angled
-  else if ((200-y) - (1.73)*x + 135 +r+c> 0 && (200-y) + (0.58)*x - 96.35 -r-c <= 0 && 
-    (200-y) - (1.73)*x - 15.54-r-c <= 0 && (200-y) + (0.58)*x - 84.81+r+c >= 0)
+  else if ((200-y) - (1.73)*x + 135+ ((r+c)/sin(1.57-atan(1.73)))> 0 && (200-y) + (0.58)*x - 96.35 +((-r-c)/sin(1.57-atan(0.58))) <= 0 && 
+    (200-y) - (1.73)*x - 15.54+((-r-c)/sin(1.57-atan(1.73))) <= 0 && (200-y) + (0.58)*x - 84.81+((r+c)/sin(1.57-atan(0.58))) >= 0)
   {
   // cout<<"rectangle"<<endl;
     return true;
@@ -479,5 +506,3 @@ bool is_obstacle_there(int x, int y,int r,int c)
   
   return false;
 }
-
-
